@@ -11,6 +11,7 @@ interface JobStore {
   setJobs: (jobs: Job[]) => void;
   addJob: (job: Job) => void;
   updateJob: (id: string, patch: Partial<Job>) => void;
+  removeJob: (id: string) => void;
   setSelectedJobId: (id: string | null) => void;
   setSearchQuery: (q: string) => void;
   setStatusFilter: (s: JobStatus | 'ALL') => void;
@@ -31,6 +32,8 @@ export const useJobStore = create<JobStore>()((set) => ({
     set((state) => ({
       jobs: state.jobs.map((j) => (j.id === id ? { ...j, ...patch } : j)),
     })),
+  removeJob: (id) =>
+    set((state) => ({ jobs: state.jobs.filter((j) => j.id !== id) })),
   setSelectedJobId: (id) => set({ selectedJobId: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
   setStatusFilter: (s) => set({ statusFilter: s }),

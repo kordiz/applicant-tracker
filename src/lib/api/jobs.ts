@@ -28,6 +28,11 @@ export async function updateJob(id: string, patch: Partial<Job>): Promise<Job> {
   return res.json();
 }
 
+export async function deleteJob(id: string): Promise<void> {
+  const res = await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete job');
+}
+
 export async function uploadResume(jobId: string, file: File): Promise<{ filename: string }> {
   const formData = new FormData();
   formData.append('resume', file);

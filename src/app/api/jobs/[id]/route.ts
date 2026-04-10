@@ -2,6 +2,24 @@ import { NextRequest } from 'next/server';
 import { readJobsFile, writeJobsFile } from '@/lib/fs/jobsFile';
 import type { JobStatus } from '@/lib/types';
 
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const jobs = await readJobsFile();
+  const index = jobs.findIndex((j) => j.id === id);
+
+  if (index === -1) {
+    return Response.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  jobs.splice(index, 1);
+  await writeJobsFile(jobs);
+
+  return new Response(null, { status: 204 });
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

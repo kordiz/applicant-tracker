@@ -2,10 +2,11 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import type { Job, JobStatus, LocationType } from '@/lib/types';
 import { useJobStore } from '@/lib/store/useJobStore';
-import { updateJob, uploadResume } from '@/lib/api/jobs';
+import { updateJob, uploadResume, deleteJob } from '@/lib/api/jobs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -24,6 +25,7 @@ import {
   ExternalLinkIcon,
   ArchiveIcon,
   UploadIcon,
+  Trash2Icon,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -48,6 +50,8 @@ export default function JobDetailShell({
   initialNoteContent: string;
 }) {
   const storeUpdateJob = useJobStore((s) => s.updateJob);
+  const storeRemoveJob = useJobStore((s) => s.removeJob);
+  const router = useRouter();
   const [job, setJobLocal] = useState(initialJob);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -60,6 +64,18 @@ export default function JobDetailShell({
       toast.success(`Status updated to ${status}`);
     } catch {
       toast.error('Failed to update status');
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Delete "${job.roleTitle}" at ${job.companyName}? This cannot be undone.`)) return;
+    try {
+      await deleteJob(job.id);
+      storeRemoveJob(job.id);
+      toast.success('Job deleted');
+      router.push('/');
+    } catch {
+      toast.error('Failed to delete job');
     }
   }
 
@@ -143,6 +159,15 @@ export default function JobDetailShell({
           >
             <ArchiveIcon className="h-3.5 w-3.5" />
             {job.isArchived ? 'Unarchive' : 'Archive'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-destructive hover:text-destructive"
+            onClick={handleDelete}
+          >
+            <Trash2Icon className="h-3.5 w-3.5" />
+            Delete
           </Button>
         </div>
       </div>
